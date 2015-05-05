@@ -111,6 +111,7 @@ def _main():
        args.get_max_brightness is False and \
        args.set_brightness is None:
         print parser.error('No valid option was specified')
+        return
 
     device = Device()
     if args.get_brightness is True:
