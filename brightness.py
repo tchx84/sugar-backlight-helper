@@ -8,35 +8,36 @@ from gi.repository import GUdev
 class Device:
 
     def __init__(self):
-        self._path = None 
+        self._path = None
         self._get_best_backlight()
 
     def _get_best_backlight(self):
-       client = GUdev.Client()
-       devices = client.query_by_subsystem('backlight')
+        client = GUdev.Client()
+        devices = client.query_by_subsystem('backlight')
 
-       if not devices:
-           return
- 
-       devices.sort(key=cmp_to_key(Device._sort_criteria))
-       self._path = devices[0].get_sysfs_path()
-       logging.info('Found device at %s', self._path)
+        if not devices:
+            logging.error('No devices were found.')
+            return
+
+        devices.sort(key=cmp_to_key(Device._sort_criteria))
+        self._path = devices[0].get_sysfs_path()
+        logging.info('Found device at %s', self._path)
 
     @staticmethod
-    def _sort_criteria(ldevice, rdevice):   
-           if ldevice.get_sysfs_attr('type') == 'firmware':
-              return 1
-           if ldevice.get_sysfs_attr('type') == 'platform' and \
-                  rdevice.get_sysfs_attr('type') == 'raw':
-              return 1
-           return -1
+    def _sort_criteria(ldevice, rdevice):
+        if ldevice.get_sysfs_attr('type') == 'firmware':
+            return 1
+        if ldevice.get_sysfs_attr('type') == 'platform' and \
+           rdevice.get_sysfs_attr('type') == 'raw':
+            return 1
+        return -1
 
     def _read_file(self, path):
         try:
             with open(path) as file:
                 return int(file.read())
         except:
-            logging.error('Could not read %s', path)
+            logging.error('Could not read from %s.', path)
             return None
 
     def get_brightness(self):
@@ -52,12 +53,11 @@ class Device:
         try:
             with open(path, 'w') as file:
                 file.write(str(value))
-        except IOError as e:
-            logging.error('Could not write %d to %s because of %s', value, path, e)
+        except IOError:
+            logging.error('Could not write %d to %s.', value, path)
 
 device = Device()
 print device.get_brightness()
 max_brightness = device.get_max_brightness()
 print max_brightness
 device.set_brightness(max_brightness)
-
