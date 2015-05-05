@@ -59,9 +59,12 @@ class Device:
             print 'Could not read from %s.' % path
             return None
 
-    def get_brightness(self):
+    def get_path(self):
         path = os.path.join(self._path, 'brightness')
-        return self._read_file(path)
+        return path
+
+    def get_brightness(self):
+        return self._read_file(self.get_path())
 
     def get_max_brightness(self):
         path = os.path.join(self._path, 'max_brightness')
@@ -80,7 +83,7 @@ class Device:
                 minimum = 0
             value = max(minimum, value)
 
-        path = os.path.join(self._path, 'brightness')
+        path = self.get_path()
         try:
             with open(path, 'w') as file:
                 file.write(str(value))
