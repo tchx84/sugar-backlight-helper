@@ -36,7 +36,7 @@ class Device:
         try:
             with open(path) as file:
                 return int(file.read())
-        except:
+        except IOError:
             logging.error('Could not read from %s.', path)
             return None
 
