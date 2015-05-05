@@ -9,6 +9,7 @@ class Device:
 
     def __init__(self):
         self._path = None
+        self._type = None
         self._get_best_backlight()
 
     def _get_best_backlight(self):
@@ -21,6 +22,8 @@ class Device:
 
         devices.sort(key=cmp_to_key(Device._sort_criteria))
         self._path = devices[0].get_sysfs_path()
+        self._type = devices[0].get_sysfs_attr('type')
+
         logging.info('Found device at %s', self._path)
 
     @staticmethod
@@ -49,6 +52,18 @@ class Device:
         return self._read_file(path)
 
     def set_brightness(self, value):
+        max_value = self.get_max_brightness()
+        if not max_value:
+            logging.error('Could not get maximum value for %s', self._path)
+            return
+
+        if self._type == 'raw':
+            if max_value > 99:
+                minimum = 1
+            else:
+                minimum = 0
+            value = max(minimum, value)
+
         path = os.path.join(self._path, 'brightness')
         try:
             with open(path, 'w') as file:
