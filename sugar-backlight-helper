@@ -108,11 +108,17 @@ def _main():
                         default=None,
                         type=int,
                         help='Set the current brightness')
+    parser.add_argument('--get-path',
+                        dest="get_path",
+                        default=False,
+                        action='store_true',
+                        help='Get the path to brightness device')
 
     args = parser.parse_args()
     if args.get_brightness is False and \
        args.get_max_brightness is False and \
-       args.set_brightness is None:
+       args.set_brightness is None and \
+       args.get_path is False:
         print parser.error('No valid option was specified')
         return
 
@@ -123,6 +129,8 @@ def _main():
         print device.get_max_brightness()
     elif args.set_brightness is not None:
         device.set_brightness(int(args.set_brightness))
+    elif args.get_path is True:
+        print device.get_path()
 
 if __name__ == '__main__':
     _main()
