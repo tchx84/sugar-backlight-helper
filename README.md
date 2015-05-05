@@ -7,8 +7,9 @@ To install (promise proper install ASAP)
 ```
 $ git clone https://github.com/tchx84/sugar-backlight-helper.git
 $ cd sugar-backlight-helper/
+$ sudo mkdir -p /usr/libexec
 $ sudo cp sugar-backlight-helper /usr/libexec/
-$ sudo chmod +x /usr/libexec/sugar-backlight-helper/
+$ sudo chmod +x /usr/libexec/sugar-backlight-helper
 $ sudo cp org.sugar.brightness.policy /usr/share/polkit-1/actions/
 ```
 
