@@ -17,6 +17,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import os
+import sys
 from argparse import ArgumentParser
 from functools import cmp_to_key
 
@@ -35,8 +36,7 @@ class Device:
         devices = client.query_by_subsystem('backlight')
 
         if not devices:
-            print 'No devices were found.'
-            return
+            raise LookupError('No backlight devices present')
 
         devices.sort(key=cmp_to_key(Device._sort_criteria))
         self._path = devices[0].get_sysfs_path()
@@ -52,12 +52,8 @@ class Device:
         return -1
 
     def _read_file(self, path):
-        try:
-            with open(path) as file:
-                return int(file.read())
-        except IOError:
-            print 'Could not read from %s.' % path
-            return None
+        with open(path) as file:
+            return int(file.read())
 
     def get_path(self):
         path = os.path.join(self._path, 'brightness')
@@ -72,9 +68,6 @@ class Device:
 
     def set_brightness(self, value):
         max_value = self.get_max_brightness()
-        if not max_value:
-            print 'Could not get maximum value for %s' % self._path
-            return
 
         if self._type == 'raw':
             if max_value > 99:
@@ -83,12 +76,8 @@ class Device:
                 minimum = 0
             value = max(minimum, value)
 
-        path = self.get_path()
-        try:
-            with open(path, 'w') as file:
-                file.write(str(value))
-        except IOError:
-            print 'Could not write %d to %s.' % (value, path)
+        with open(self.get_path(), 'w') as file:
+            file.write(str(value))
 
 
 def _main():
@@ -122,15 +111,19 @@ def _main():
         print parser.error('No valid option was specified')
         return
 
-    device = Device()
-    if args.get_brightness is True:
-        print device.get_brightness()
-    elif args.get_max_brightness is True:
-        print device.get_max_brightness()
-    elif args.set_brightness is not None:
-        device.set_brightness(int(args.set_brightness))
-    elif args.get_path is True:
-        print device.get_path()
+    try:
+        device = Device()
+        if args.get_brightness is True:
+            print device.get_brightness()
+        elif args.get_max_brightness is True:
+            print device.get_max_brightness()
+        elif args.set_brightness is not None:
+            device.set_brightness(int(args.set_brightness))
+        elif args.get_path is True:
+            print device.get_path()
+    except Exception as err:
+        print str(err)
+        sys.exit(-1)
 
 if __name__ == '__main__':
     _main()
